@@ -1,0 +1,167 @@
+{
+  "metadata": {
+    "model": "llama3.2",
+    "endpoint": "http://127.0.0.1:11434",
+    "gen_tokens": 512,
+    "iterations": 5,
+    "concurrent": 1,
+    "retries": 3,
+    "retry_delay": 2.0,
+    "timestamp": "2026-05-14T10:30:00"
+  },
+  "results": [
+    {
+      "prompt_size": 64,
+      "kv_cache": { "raw": { "kv_cache_used": 67108864, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 12.3, "input_tps": 5200.5, "output_tps": 85.2, "total_latency_ms": 6023.1, "prompt_tokens": 64, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 11.8, "input_tps": 5423.7, "output_tps": 86.1, "total_latency_ms": 5958.4, "prompt_tokens": 64, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 13.1, "input_tps": 4885.5, "output_tps": 84.3, "total_latency_ms": 6087.2, "prompt_tokens": 64, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 12.5, "input_tps": 5120.0, "output_tps": 85.8, "total_latency_ms": 5976.5, "prompt_tokens": 64, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 12.9, "input_tps": 4961.2, "output_tps": 84.9, "total_latency_ms": 6034.8, "prompt_tokens": 64, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 12.5, "p95": 13.1, "p99": 13.1, "min": 11.8, "max": 13.1 },
+        "input_tps": { "median": 5120.0, "p95": 5423.7, "p99": 5423.7, "min": 4885.5, "max": 5423.7 },
+        "output_tps": { "median": 85.2, "p95": 86.1, "p99": 86.1, "min": 84.3, "max": 86.1 },
+        "total_latency_ms": { "median": 6023.1, "p95": 6087.2, "p99": 6087.2, "min": 5958.4, "max": 6087.2 }
+      }
+    },
+    {
+      "prompt_size": 256,
+      "kv_cache": { "raw": { "kv_cache_used": 268435456, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 45.2, "input_tps": 5663.7, "output_tps": 82.1, "total_latency_ms": 6283.5, "prompt_tokens": 256, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 44.1, "input_tps": 5805.0, "output_tps": 83.4, "total_latency_ms": 6182.3, "prompt_tokens": 256, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 48.3, "input_tps": 5300.2, "output_tps": 81.2, "total_latency_ms": 6350.1, "prompt_tokens": 256, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 46.1, "input_tps": 5553.1, "output_tps": 82.8, "total_latency_ms": 6228.7, "prompt_tokens": 256, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 47.5, "input_tps": 5389.5, "output_tps": 81.9, "total_latency_ms": 6299.4, "prompt_tokens": 256, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 46.1, "p95": 48.3, "p99": 48.3, "min": 44.1, "max": 48.3 },
+        "input_tps": { "median": 5553.1, "p95": 5805.0, "p99": 5805.0, "min": 5300.2, "max": 5805.0 },
+        "output_tps": { "median": 82.1, "p95": 83.4, "p99": 83.4, "min": 81.2, "max": 83.4 },
+        "total_latency_ms": { "median": 6283.5, "p95": 6350.1, "p99": 6350.1, "min": 6182.3, "max": 6350.1 }
+      }
+    },
+    {
+      "prompt_size": 512,
+      "kv_cache": { "raw": { "kv_cache_used": 536870912, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 89.4, "input_tps": 5727.1, "output_tps": 79.5, "total_latency_ms": 6530.2, "prompt_tokens": 512, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 87.2, "input_tps": 5871.6, "output_tps": 80.2, "total_latency_ms": 6472.8, "prompt_tokens": 512, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 92.1, "input_tps": 5559.2, "output_tps": 78.8, "total_latency_ms": 6588.5, "prompt_tokens": 512, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 90.5, "input_tps": 5657.5, "output_tps": 79.1, "total_latency_ms": 6562.3, "prompt_tokens": 512, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 88.7, "input_tps": 5772.0, "output_tps": 79.8, "total_latency_ms": 6501.7, "prompt_tokens": 512, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 89.4, "p95": 92.1, "p99": 92.1, "min": 87.2, "max": 92.1 },
+        "input_tps": { "median": 5727.1, "p95": 5871.6, "p99": 5871.6, "min": 5559.2, "max": 5871.6 },
+        "output_tps": { "median": 79.5, "p95": 80.2, "p99": 80.2, "min": 78.8, "max": 80.2 },
+        "total_latency_ms": { "median": 6530.2, "p95": 6588.5, "p99": 6588.5, "min": 6472.8, "max": 6588.5 }
+      }
+    },
+    {
+      "prompt_size": 1024,
+      "kv_cache": { "raw": { "kv_cache_used": 1073741824, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 178.3, "input_tps": 5744.8, "output_tps": 76.3, "total_latency_ms": 6889.4, "prompt_tokens": 1024, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 175.1, "input_tps": 5849.1, "output_tps": 77.1, "total_latency_ms": 6812.5, "prompt_tokens": 1024, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 182.4, "input_tps": 5614.0, "output_tps": 75.8, "total_latency_ms": 6945.2, "prompt_tokens": 1024, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 180.2, "input_tps": 5682.2, "output_tps": 76.5, "total_latency_ms": 6912.8, "prompt_tokens": 1024, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 176.8, "input_tps": 5791.9, "output_tps": 76.9, "total_latency_ms": 6851.3, "prompt_tokens": 1024, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 178.3, "p95": 182.4, "p99": 182.4, "min": 175.1, "max": 182.4 },
+        "input_tps": { "median": 5744.8, "p95": 5849.1, "p99": 5849.1, "min": 5614.0, "max": 5849.1 },
+        "output_tps": { "median": 76.3, "p95": 77.1, "p99": 77.1, "min": 75.8, "max": 77.1 },
+        "total_latency_ms": { "median": 6889.4, "p95": 6945.2, "p99": 6945.2, "min": 6812.5, "max": 6945.2 }
+      }
+    },
+    {
+      "prompt_size": 2048,
+      "kv_cache": { "raw": { "kv_cache_used": 2147483648, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 356.2, "input_tps": 5750.7, "output_tps": 72.4, "total_latency_ms": 7427.8, "prompt_tokens": 2048, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 348.7, "input_tps": 5874.4, "output_tps": 73.1, "total_latency_ms": 7352.3, "prompt_tokens": 2048, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 362.1, "input_tps": 5657.6, "output_tps": 71.8, "total_latency_ms": 7492.5, "prompt_tokens": 2048, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 358.5, "input_tps": 5712.3, "output_tps": 72.6, "total_latency_ms": 7458.2, "prompt_tokens": 2048, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 352.4, "input_tps": 5812.8, "output_tps": 72.9, "total_latency_ms": 7398.6, "prompt_tokens": 2048, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 356.2, "p95": 362.1, "p99": 362.1, "min": 348.7, "max": 362.1 },
+        "input_tps": { "median": 5750.7, "p95": 5874.4, "p99": 5874.4, "min": 5657.6, "max": 5874.4 },
+        "output_tps": { "median": 72.4, "p95": 73.1, "p99": 73.1, "min": 71.8, "max": 73.1 },
+        "total_latency_ms": { "median": 7427.8, "p95": 7492.5, "p99": 7492.5, "min": 7352.3, "max": 7492.5 }
+      }
+    },
+    {
+      "prompt_size": 4096,
+      "kv_cache": { "raw": { "kv_cache_used": 3221225472, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 712.5, "input_tps": 5749.8, "output_tps": 68.2, "total_latency_ms": 8220.3, "prompt_tokens": 4096, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 698.3, "input_tps": 5866.9, "output_tps": 69.1, "total_latency_ms": 8112.7, "prompt_tokens": 4096, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 725.1, "input_tps": 5649.0, "output_tps": 67.5, "total_latency_ms": 8298.5, "prompt_tokens": 4096, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 718.2, "input_tps": 5704.5, "output_tps": 68.5, "total_latency_ms": 8255.1, "prompt_tokens": 4096, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 705.8, "input_tps": 5805.2, "output_tps": 68.8, "total_latency_ms": 8172.4, "prompt_tokens": 4096, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 712.5, "p95": 725.1, "p99": 725.1, "min": 698.3, "max": 725.1 },
+        "input_tps": { "median": 5749.8, "p95": 5866.9, "p99": 5866.9, "min": 5649.0, "max": 5866.9 },
+        "output_tps": { "median": 68.2, "p95": 69.1, "p99": 69.1, "min": 67.5, "max": 69.1 },
+        "total_latency_ms": { "median": 8220.3, "p95": 8298.5, "p99": 8298.5, "min": 8112.7, "max": 8298.5 }
+      }
+    },
+    {
+      "prompt_size": 8192,
+      "kv_cache": { "raw": { "kv_cache_used": 3758096384, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 1425.3, "input_tps": 5748.2, "output_tps": 62.1, "total_latency_ms": 9670.5, "prompt_tokens": 8192, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 1398.7, "input_tps": 5858.4, "output_tps": 63.2, "total_latency_ms": 9542.8, "prompt_tokens": 8192, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 1448.2, "input_tps": 5657.5, "output_tps": 61.5, "total_latency_ms": 9775.3, "prompt_tokens": 8192, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 1432.1, "input_tps": 5721.3, "output_tps": 62.5, "total_latency_ms": 9712.6, "prompt_tokens": 8192, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 1410.5, "input_tps": 5810.7, "output_tps": 62.8, "total_latency_ms": 9598.2, "prompt_tokens": 8192, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 1425.3, "p95": 1448.2, "p99": 1448.2, "min": 1398.7, "max": 1448.2 },
+        "input_tps": { "median": 5748.2, "p95": 5858.4, "p99": 5858.4, "min": 5657.5, "max": 5858.4 },
+        "output_tps": { "median": 62.1, "p95": 63.2, "p99": 63.2, "min": 61.5, "max": 63.2 },
+        "total_latency_ms": { "median": 9670.5, "p95": 9775.3, "p99": 9775.3, "min": 9542.8, "max": 9775.3 }
+      }
+    },
+    {
+      "prompt_size": 16384,
+      "kv_cache": { "raw": { "kv_cache_used": 4080218931, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 2850.6, "input_tps": 5747.5, "output_tps": 55.3, "total_latency_ms": 12108.4, "prompt_tokens": 16384, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 2795.2, "input_tps": 5862.1, "output_tps": 56.2, "total_latency_ms": 11905.7, "prompt_tokens": 16384, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 2895.8, "input_tps": 5658.3, "output_tps": 54.8, "total_latency_ms": 12245.9, "prompt_tokens": 16384, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 2865.3, "input_tps": 5718.6, "output_tps": 55.6, "total_latency_ms": 12172.3, "prompt_tokens": 16384, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 2820.7, "input_tps": 5815.4, "output_tps": 55.9, "total_latency_ms": 12038.5, "prompt_tokens": 16384, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 2850.6, "p95": 2895.8, "p99": 2895.8, "min": 2795.2, "max": 2895.8 },
+        "input_tps": { "median": 5747.5, "p95": 5862.1, "p99": 5862.1, "min": 5658.3, "max": 5862.1 },
+        "output_tps": { "median": 55.3, "p95": 56.2, "p99": 56.2, "min": 54.8, "max": 56.2 },
+        "total_latency_ms": { "median": 12108.4, "p95": 12245.9, "p99": 12245.9, "min": 11905.7, "max": 12245.9 }
+      }
+    },
+    {
+      "prompt_size": 32768,
+      "kv_cache": { "raw": { "kv_cache_used": 4261412864, "kv_cache_total": 4294967296 } },
+      "runs": [
+        { "ttft_ms": 5701.2, "input_tps": 5746.8, "output_tps": 48.5, "total_latency_ms": 16258.7, "prompt_tokens": 32768, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 5590.4, "input_tps": 5861.5, "output_tps": 49.2, "total_latency_ms": 15998.3, "prompt_tokens": 32768, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 5792.6, "input_tps": 5656.9, "output_tps": 47.9, "total_latency_ms": 16482.5, "prompt_tokens": 32768, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 5730.5, "input_tps": 5718.2, "output_tps": 48.7, "total_latency_ms": 16358.2, "prompt_tokens": 32768, "output_tokens": 512, "retries_used": 0 },
+        { "ttft_ms": 5641.8, "input_tps": 5814.7, "output_tps": 49.0, "total_latency_ms": 16102.6, "prompt_tokens": 32768, "output_tokens": 512, "retries_used": 0 }
+      ],
+      "stats": {
+        "ttft_ms": { "median": 5701.2, "p95": 5792.6, "p99": 5792.6, "min": 5590.4, "max": 5792.6 },
+        "input_tps": { "median": 5746.8, "p95": 5861.5, "p99": 5861.5, "min": 5656.9, "max": 5861.5 },
+        "output_tps": { "median": 48.5, "p95": 49.2, "p99": 49.2, "min": 47.9, "max": 49.2 },
+        "total_latency_ms": { "median": 16258.7, "p95": 16482.5, "p99": 16482.5, "min": 15998.3, "max": 16482.5 }
+      }
+    }
+  ]
+}
