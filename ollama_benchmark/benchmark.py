@@ -3,7 +3,6 @@
 import json
 import sys
 import time
-import statistics
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -76,14 +75,15 @@ def _retry_request(
     retries: int,
     retry_delay: float,
     **kwargs: Any,
-) -> requests.Response:
+) -> tuple[requests.Response, int]:
     """Perform an HTTP request with exponential-backoff retry logic.
 
     Catches ConnectionError, Timeout, ChunkedEncodingError, and HTTP 5xx.
-    Returns the response on success.  Raises the last exception after all
-    retries are exhausted.
+    Returns a tuple of (response, retries_used) on success.
+    Raises the last exception after all retries are exhausted.
     """
     last_exception: Exception | None = None
+    retries_used = 0
 
     for attempt in range(1, retries + 1):
         try:
@@ -92,7 +92,8 @@ def _retry_request(
                 raise requests.exceptions.HTTPError(
                     f"Server error {resp.status_code}", response=resp
                 )
-            return resp
+            retries_used = attempt - 1  # 0 if first attempt succeeded
+            return resp, retries_used
         except (
             requests.exceptions.ConnectionError,
             requests.exceptions.Timeout,
@@ -100,6 +101,7 @@ def _retry_request(
             requests.exceptions.HTTPError,
         ) as exc:
             last_exception = exc
+            retries_used = attempt
             if attempt < retries:
                 delay = retry_delay * (2 ** (attempt - 1))
                 console.log(
@@ -146,7 +148,7 @@ def run_single_benchmark(
     retries_used = 0
 
     try:
-        response = _retry_request(
+        response, retries_used = _retry_request(
             "POST",
             url,
             retries=retries,
@@ -155,11 +157,6 @@ def run_single_benchmark(
             stream=True,
             timeout=300,
         )
-        # Count retries used (if first attempt succeeded, retries_used = 0)
-        # We can't easily count from _retry_request, so we track via the
-        # absence of exception — if we're here, the last attempt succeeded.
-        # For simplicity we set retries_used = 0 on success; the caller
-        # can infer from logs if retries happened.
     except Exception:
         # All retries exhausted
         raise
@@ -278,7 +275,7 @@ def check_and_pull_model(
 
     # Step 1: Check if model exists in local models list
     try:
-        response = _retry_request(
+        response, _ = _retry_request(
             "GET",
             url_tags,
             retries=retries,
@@ -301,7 +298,7 @@ def check_and_pull_model(
     console.log(f"[cyan]Model '{model}' not found. Pulling from Ollama...[/cyan]")
 
     try:
-        pull_response = _retry_request(
+        pull_response, _ = _retry_request(
             "POST",
             url_pull,
             retries=retries,
@@ -400,7 +397,7 @@ def check_and_pull_model(
         if last_status != "success":
             console.log(f"[yellow]Pull may have completed with status: {last_status}[/yellow]")
             # Try again to verify
-            verify_response = _retry_request(
+            verify_response, _ = _retry_request(
                 "GET",
                 url_tags,
                 retries=1,
