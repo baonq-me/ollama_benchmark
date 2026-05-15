@@ -9,100 +9,174 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-function prepareChartData(results, metricKey, label, suffix) {
-  if (!results) return [];
-  return results.map((entry) => ({
-    promptSize: entry.prompt_size,
-    [label + suffix]: entry.stats[metricKey].median,
-    [label + suffix + ' P95']: entry.stats[metricKey].p95,
-    [label + suffix + ' P99']: entry.stats[metricKey].p99,
-  }));
+const colors = [
+  { ttft: '#d97706', latency: '#dc2626' }, // Bench 1: orange/red
+  { ttft: '#059669', latency: '#7c3aed' }, // Bench 2: emerald/purple
+  { ttft: '#f59e0b', latency: '#ef4444' }, // Bench 3: amber/red
+  { ttft: '#3b82f6', latency: '#10b981' }, // Bench 4: blue/emerald
+  { ttft: '#f472b6', latency: '#3b82f6' }, // Bench 5: pink/blue
+  { ttft: '#a855f7', latency: '#f59e0b' }, // Bench 6: purple/amber
+  { ttft: '#14b8a6', latency: '#f472b6' }, // Bench 7: teal/pink
+  { ttft: '#f97316', latency: '#a855f7' }, // Bench 8: orange/purple
+];
+
+function prepareChartData(benchmarks) {
+  const dataMap = new Map();
+
+  benchmarks.forEach((bench, idx) => {
+    (bench.results || []).forEach((entry) => {
+      const promptSize = entry.prompt_size;
+      if (!dataMap.has(promptSize)) {
+        dataMap.set(promptSize, { promptSize });
+      }
+      const item = dataMap.get(promptSize);
+      item[`ttft_${idx}`] = entry.stats.ttft_ms.median;
+      item[`ttft_${idx}_p95`] = entry.stats.ttft_ms.p95;
+      item[`ttft_${idx}_p99`] = entry.stats.ttft_ms.p99;
+      item[`latency_${idx}`] = entry.stats.total_latency_ms.median;
+      item[`latency_${idx}_p95`] = entry.stats.total_latency_ms.p95;
+      item[`latency_${idx}_p99`] = entry.stats.total_latency_ms.p99;
+    });
+  });
+
+  return Array.from(dataMap.values()).sort((a, b) => a.promptSize - b.promptSize);
 }
 
-export default function LatencyCharts({ results1, results2 }) {
-  if (!results1 && !results2) return null;
+function TTftChart({ benchmarks, chartData }) {
+  if (benchmarks.length === 0) return null;
 
-  const ttftData1 = prepareChartData(results1, 'ttft_ms', 'TTFT (ms)', ' (Bench 1)');
-  const latencyData1 = prepareChartData(results1, 'total_latency_ms', 'Total Latency (ms)', ' (Bench 1)');
-
-  const ttftData2 = prepareChartData(results2, 'ttft_ms', 'TTFT (ms)', ' (Bench 2)');
-  const latencyData2 = prepareChartData(results2, 'total_latency_ms', 'Total Latency (ms)', ' (Bench 2)');
-
-  const mergeChartData = (dataA, dataB) => {
-    const merged = new Map();
-    [...dataA, ...dataB].forEach(item => {
-      const existing = merged.get(item.promptSize) || { promptSize: item.promptSize };
-      merged.set(item.promptSize, { ...existing, ...item });
-    });
-    return Array.from(merged.values()).sort((a, b) => a.promptSize - b.promptSize);
-  };
-
-  const mergedTtftData = mergeChartData(ttftData1, ttftData2);
-  const mergedLatencyData = mergeChartData(latencyData1, latencyData2);
-
-  const renderLines = (dataKey, color) => [
-    <Line
-      key={dataKey}
-      type="monotone"
-      dataKey={dataKey}
-      stroke={color}
-      strokeWidth={2}
-      dot={{ fill: color, r: 4 }}
-      name={dataKey}
-    />,
-    <Line
-      key={dataKey + ' P95'}
-      type="monotone"
-      dataKey={dataKey + ' P95'}
-      stroke={color}
-      strokeWidth={1}
-      strokeDasharray="5 5"
-      dot={false}
-      opacity={0.5}
-    />,
-    <Line
-      key={dataKey + ' P99'}
-      type="monotone"
-      dataKey={dataKey + ' P99'}
-      stroke={color}
-      strokeWidth={1}
-      strokeDasharray="2 2"
-      dot={false}
-      opacity={0.3}
-    />,
-  ];
-
-  const chartConfig = (title, data, unit) => (
+  return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Time to first token (ttft)</h3>
       <ResponsiveContainer width="100%" height={350}>
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis
             dataKey="promptSize"
             stroke="#6b7280"
             tick={{ fontSize: 12 }}
-            label={{ value: 'Prompt Size (tokens)', position: 'insideBottom', offset: -5, fill: '#6b7280' }}
+            label={{ value: 'prompt size (tokens)', position: 'insideBottom', offset: -5, fill: '#6b7280' }}
           />
-          <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} unit={unit} />
+          <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} unit=" ms" />
           <Tooltip
             contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
             labelStyle={{ color: '#374151' }}
           />
           <Legend />
-          {results1 && renderLines('TTFT (ms) (Bench 1)', '#d97706')}
-          {results2 && renderLines('TTFT (ms) (Bench 2)', '#059669')}
-          {results1 && renderLines('Total Latency (ms) (Bench 1)', '#dc2626')}
-          {results2 && renderLines('Total Latency (ms) (Bench 2)', '#7c3aed')}
+          {benchmarks.map((bench, idx) => {
+            const color = colors[idx] || colors[idx % colors.length];
+            return (
+              <React.Fragment key={`ttft-${bench.index}`}>
+                <Line
+                  type="monotone"
+                  dataKey={`ttft_${idx}`}
+                  stroke={color.ttft}
+                  strokeWidth={2}
+                  dot={{ fill: color.ttft, r: 4 }}
+                  name={`benchmark ${idx + 1} (median)`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={`ttft_${idx}_p95`}
+                  stroke={color.ttft}
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  opacity={0.5}
+                  name={`benchmark ${idx + 1} (p95)`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={`ttft_${idx}_p99`}
+                  stroke={color.ttft}
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  dot={false}
+                  opacity={0.3}
+                  name={`benchmark ${idx + 1} (p99)`}
+                />
+              </React.Fragment>
+            );
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
+}
+
+function TotalLatencyChart({ benchmarks, chartData }) {
+  if (benchmarks.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      {results1 && chartConfig('Time to First Token (TTFT)', mergedTtftData, ' ms')}
-      {results2 && chartConfig('Total Generation Latency', mergedLatencyData, ' ms')}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Latency</h3>
+      <ResponsiveContainer width="100%" height={350}>
+        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis
+            dataKey="promptSize"
+            stroke="#6b7280"
+            tick={{ fontSize: 12 }}
+            label={{ value: 'prompt size (tokens)', position: 'insideBottom', offset: -5, fill: '#6b7280' }}
+          />
+          <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} unit=" ms" />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+            labelStyle={{ color: '#374151' }}
+          />
+          <Legend />
+          {benchmarks.map((bench, idx) => {
+            const color = colors[idx] || colors[idx % colors.length];
+            return (
+              <React.Fragment key={`latency-${bench.index}`}>
+                <Line
+                  type="monotone"
+                  dataKey={`latency_${idx}`}
+                  stroke={color.latency}
+                  strokeWidth={2}
+                  dot={{ fill: color.latency, r: 4 }}
+                  name={`benchmark ${idx + 1} (median)`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={`latency_${idx}_p95`}
+                  stroke={color.latency}
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  opacity={0.5}
+                  name={`benchmark ${idx + 1} (p95)`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={`latency_${idx}_p99`}
+                  stroke={color.latency}
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  dot={false}
+                  opacity={0.3}
+                  name={`benchmark ${idx + 1} (p99)`}
+                />
+              </React.Fragment>
+            );
+          })}
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
+
+export default function LatencyCharts({ benchmarks }) {
+  if (!benchmarks || benchmarks.length === 0) return null;
+
+  const chartData = prepareChartData(benchmarks);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <TTftChart benchmarks={benchmarks} chartData={chartData} />
+      <TotalLatencyChart benchmarks={benchmarks} chartData={chartData} />
+    </div>
+  );
+}
+
+import React from 'react';

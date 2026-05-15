@@ -9,45 +9,54 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-function prepareConcurrentData(results, suffix) {
-  if (!results) return [];
-  return results.map((entry) => ({
-    promptSize: entry.prompt_size,
-    ['Input t/s' + suffix]: entry.stats.input_tps.median,
-    ['Output t/s' + suffix]: entry.stats.output_tps.median,
-  }));
+const colors = [
+  { input: '#0891b2', output: '#7c3aed' }, // Bench 1: cyan/purple
+  { input: '#d97706', output: '#ec4899' }, // Bench 2: orange/pink
+  { input: '#10b981', output: '#f472b6' }, // Bench 3: emerald/pink
+  { input: '#3b82f6', output: '#a855f7' }, // Bench 4: blue/purple
+  { input: '#ef4444', output: '#14b8a6' }, // Bench 5: red/teal
+  { input: '#f59e0b', output: '#3b82f6' }, // Bench 6: amber/blue
+  { input: '#f472b6', output: '#f97316' }, // Bench 7: pink/orange
+  { input: '#a855f7', output: '#10b981' }, // Bench 8: purple/emerald
+];
+
+function prepareConcurrentData(benchmarks) {
+  const dataMap = new Map();
+
+  benchmarks.forEach((bench, idx) => {
+    if (bench.metadata && bench.metadata.concurrent > 1 && bench.results) {
+      (bench.results || []).forEach((entry) => {
+        const promptSize = entry.prompt_size;
+        if (!dataMap.has(promptSize)) {
+          dataMap.set(promptSize, { promptSize });
+        }
+        const item = dataMap.get(promptSize);
+        item[`input_${idx}`] = entry.stats.input_tps.median;
+        item[`output_${idx}`] = entry.stats.output_tps.median;
+      });
+    }
+  });
+
+  return Array.from(dataMap.values()).sort((a, b) => a.promptSize - b.promptSize);
 }
 
-export default function ConcurrentCharts({ metadata1, results1, metadata2, results2 }) {
-  const hasConcurrent1 = metadata1 && metadata1.concurrent > 1 && results1 && results1.length > 0;
-  const hasConcurrent2 = metadata2 && metadata2.concurrent > 1 && results2 && results2.length > 0;
+export default function ConcurrentCharts({ benchmarks }) {
+  // Filter benchmarks that have concurrent > 1
+  const concurrentBenchmarks = benchmarks.filter(
+    (bench) => bench.metadata && bench.metadata.concurrent > 1 && bench.results && bench.results.length > 0
+  );
 
-  if (!hasConcurrent1 && !hasConcurrent2) return null;
+  if (concurrentBenchmarks.length === 0) return null;
 
-  const data1 = prepareConcurrentData(results1, ' (Bench 1)');
-  const data2 = prepareConcurrentData(results2, ' (Bench 2)');
+  const chartData = prepareConcurrentData(benchmarks);
 
-  const mergeChartData = (dataA, dataB) => {
-    const merged = new Map();
-    [...dataA, ...dataB].forEach(item => {
-      const existing = merged.get(item.promptSize) || { promptSize: item.promptSize };
-      merged.set(item.promptSize, { ...existing, ...item });
-    });
-    return Array.from(merged.values()).sort((a, b) => a.promptSize - b.promptSize);
-  };
-
-  const mergedData = mergeChartData(data1, data2);
-
-  const concurrentValue1 = metadata1?.concurrent || 1;
-  const concurrentValue2 = metadata2?.concurrent || 1;
-
-  let title = '⚡ Concurrent Performance';
-  if (hasConcurrent1 && hasConcurrent2) {
-    title += ' (Bench 1: ' + concurrentValue1 + ', Bench 2: ' + concurrentValue2 + ')';
-  } else if (hasConcurrent1) {
-    title += ' (concurrency=' + concurrentValue1 + ')';
+  // Build title
+  let title = '⚡ concurrent performance';
+  const concurrentValues = concurrentBenchmarks.map(b => b.metadata.concurrent);
+  if (concurrentBenchmarks.length === 1) {
+    title += ` (concurrency=${concurrentValues[0]})`;
   } else {
-    title += ' (concurrency=' + concurrentValue2 + ')';
+    title += ` (${concurrentBenchmarks.map((b, i) => `benchmark ${i + 1}: ${b.metadata.concurrent}`).join(', ')})`;
   }
 
   return (
@@ -55,16 +64,16 @@ export default function ConcurrentCharts({ metadata1, results1, metadata2, resul
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
         <p className="text-gray-500 text-sm mb-4">
-          Throughput under simultaneous requests. Higher is better.
+          throughput under simultaneous requests. higher is better.
         </p>
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={mergedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="promptSize"
               stroke="#6b7280"
               tick={{ fontSize: 12 }}
-              label={{ value: 'Prompt Size (tokens)', position: 'insideBottom', offset: -5, fill: '#6b7280' }}
+              label={{ value: 'prompt size (tokens)', position: 'insideBottom', offset: -5, fill: '#6b7280' }}
             />
             <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} />
             <Tooltip
@@ -72,21 +81,20 @@ export default function ConcurrentCharts({ metadata1, results1, metadata2, resul
               labelStyle={{ color: '#374151' }}
             />
             <Legend />
-            {hasConcurrent1 && (
-              <Bar dataKey="Input t/s (Bench 1)" fill="#0891b2" radius={[4, 4, 0, 0]} />
-            )}
-            {hasConcurrent1 && (
-              <Bar dataKey="Output t/s (Bench 1)" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-            )}
-            {hasConcurrent2 && (
-              <Bar dataKey="Input t/s (Bench 2)" fill="#d97706" radius={[4, 4, 0, 0]} />
-            )}
-            {hasConcurrent2 && (
-              <Bar dataKey="Output t/s (Bench 2)" fill="#ec4899" radius={[4, 4, 0, 0]} />
-            )}
+            {concurrentBenchmarks.map((bench, idx) => {
+              const color = colors[idx] || colors[idx % colors.length];
+              return (
+                <React.Fragment key={`concurrent-${bench.index}`}>
+                  <Bar dataKey={`input_${idx}`} fill={color.input} radius={[4, 4, 0, 0]} name={`benchmark ${idx + 1} input token/s`} />
+                  <Bar dataKey={`output_${idx}`} fill={color.output} radius={[4, 4, 0, 0]} name={`benchmark ${idx + 1} output token/s`} />
+                </React.Fragment>
+              );
+            })}
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 }
+
+import React from 'react';
