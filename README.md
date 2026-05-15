@@ -1,5 +1,8 @@
 # 🚀 Ollama Benchmark
 
+> This is a sample vibe coded project using a local hosted Qwen3.5-122B-A10B on Asus GX10 to demonstrate the model capability. The project is not intended for real production workload.
+
+
 A Python CLI tool + React dashboard for benchmarking Ollama LLM performance. Measures 5 metrics: input/output throughput, TTFT, total latency, context scaling (64–8192 tokens), P95/P99 latency, and concurrent performance. Uses streaming `/api/chat` endpoint with SSE parsing. Outputs JSON + CLI summary table. React/Vite/Tailwind/Recharts frontend reads the JSON and renders interactive charts.
 
 ## Features
