@@ -243,25 +243,6 @@ def run_single_benchmark(
     }
 
 
-# ── KV cache stats ──────────────────────────────────────────────────────────
-
-def get_kv_cache_stats(
-    endpoint: str,
-    retries: int = 3,
-    retry_delay: float = 2.0,
-) -> dict[str, Any] | None:
-    """Fetch Ollama server stats from GET /api/stats.
-
-    Returns KV cache memory info or None if the endpoint is unavailable.
-    """
-    url = f"{endpoint.rstrip('/')}/api/stats"
-    try:
-        resp = _retry_request("GET", url, retries=retries, retry_delay=retry_delay, timeout=10)
-        return resp.json()
-    except Exception:
-        return None
-
-
 # ── Statistics helpers ──────────────────────────────────────────────────────
 
 def _compute_stats(values: list[float]) -> dict[str, float]:
@@ -299,15 +280,6 @@ def run_benchmark_suite(
     for prompt_size in prompt_sizes:
         console.rule(f"[bold cyan]Prompt size: {prompt_size} tokens[/bold cyan]")
         prompt_text = generate_prompt(prompt_size)
-
-        # Snapshot KV cache before runs
-        kv_stats = get_kv_cache_stats(endpoint, retries, retry_delay)
-        kv_cache_info: dict[str, Any] | None = None
-        if kv_stats:
-            # Ollama /api/stats returns various fields; extract what we can
-            kv_cache_info = {
-                "raw": kv_stats,
-            }
 
         runs: list[dict[str, Any]] = []
 
@@ -368,9 +340,6 @@ def run_benchmark_suite(
             "runs": runs,
             "stats": stats,
         }
-        if kv_cache_info:
-            entry["kv_cache"] = kv_cache_info
-
         results.append(entry)
 
     return {

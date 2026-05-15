@@ -3,7 +3,6 @@ import FileLoader from './components/FileLoader';
 import SummaryTable from './components/SummaryTable';
 import ThroughputCharts from './components/ThroughputCharts';
 import LatencyCharts from './components/LatencyCharts';
-import ResourceCharts from './components/ResourceCharts';
 import ConcurrentCharts from './components/ConcurrentCharts';
 
 function App() {
@@ -124,7 +123,6 @@ function App() {
             <SummaryTable results1={results1} results2={results2} />
             <ThroughputCharts results1={results1} results2={results2} />
             <LatencyCharts results1={results1} results2={results2} />
-            <ResourceCharts results1={results1} results2={results2} />
             <ConcurrentCharts metadata1={metadata1} results1={results1} metadata2={metadata2} results2={results2} />
           </>
         )}

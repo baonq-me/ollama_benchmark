@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "model": "qwen3.5:2b",
+    "gen_tokens": 512,
+    "iterations": 3,
+    "concurrent": 1,
+    "retries": 3,
+    "retry_delay": 2.0,
+    "timestamp": "2026-05-15T02:28:33"
+  },
+  "results": [
+    {
+      "prompt_size": 64,
+      "runs": [
+        {
+          "ttft_ms": 6955.95,
+          "input_tps": 3119.18,
+          "output_tps": 90.16,
+          "total_latency_ms": 12668.14,
+          "prompt_tokens": 121,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 452.43,
+          "input_tps": 3210.83,
+          "output_tps": 83.94,
+          "total_latency_ms": 6514.07,
+          "prompt_tokens": 121,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 329.43,
+          "input_tps": 3425.71,
+          "output_tps": 89.73,
+          "total_latency_ms": 6060.52,
+          "prompt_tokens": 121,
+          "output_tokens": 512,
+          "retries_used": 0
+        }
+      ],
+      "stats": {
+        "ttft_ms": {
+          "median": 452.43,
+          "p95": 6305.6,
+          "p99": 6825.88,
+          "min": 329.43,
+          "max": 6955.95
+        },
+        "input_tps": {
+          "median": 3210.83,
+          "p95": 3404.22,
+          "p99": 3421.41,
+          "min": 3119.18,
+          "max": 3425.71
+        },
+        "output_tps": {
+          "median": 89.73,
+          "p95": 90.12,
+          "p99": 90.15,
+          "min": 83.94,
+          "max": 90.16
+        },
+        "total_latency_ms": {
+          "median": 6514.07,
+          "p95": 12052.73,
+          "p99": 12545.06,
+          "min": 6060.52,
+          "max": 12668.14
+        }
+      }
+    },
+    {
+      "prompt_size": 1024,
+      "runs": [
+        {
+          "ttft_ms": 482.34,
+          "input_tps": 5571.24,
+          "output_tps": 90.12,
+          "total_latency_ms": 6196.14,
+          "prompt_tokens": 1097,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 437.93,
+          "input_tps": 8919.44,
+          "output_tps": 89.54,
+          "total_latency_ms": 6186.03,
+          "prompt_tokens": 1097,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 404.98,
+          "input_tps": 9072.25,
+          "output_tps": 89.59,
+          "total_latency_ms": 6149.21,
+          "prompt_tokens": 1097,
+          "output_tokens": 512,
+          "retries_used": 0
+        }
+      ],
+      "stats": {
+        "ttft_ms": {
+          "median": 437.93,
+          "p95": 477.9,
+          "p99": 481.45,
+          "min": 404.98,
+          "max": 482.34
+        },
+        "input_tps": {
+          "median": 8919.44,
+          "p95": 9056.97,
+          "p99": 9069.19,
+          "min": 5571.24,
+          "max": 9072.25
+        },
+        "output_tps": {
+          "median": 89.59,
+          "p95": 90.07,
+          "p99": 90.11,
+          "min": 89.54,
+          "max": 90.12
+        },
+        "total_latency_ms": {
+          "median": 6186.03,
+          "p95": 6195.13,
+          "p99": 6195.94,
+          "min": 6149.21,
+          "max": 6196.14
+        }
+      }
+    },
+    {
+      "prompt_size": 8192,
+      "runs": [
+        {
+          "ttft_ms": 1721.65,
+          "input_tps": 6342.81,
+          "output_tps": 86.79,
+          "total_latency_ms": 7555.28,
+          "prompt_tokens": 8362,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 634.53,
+          "input_tps": 26212.64,
+          "output_tps": 86.52,
+          "total_latency_ms": 6577.18,
+          "prompt_tokens": 8362,
+          "output_tokens": 512,
+          "retries_used": 0
+        },
+        {
+          "ttft_ms": 670.33,
+          "input_tps": 25798.43,
+          "output_tps": 86.4,
+          "total_latency_ms": 6622.67,
+          "prompt_tokens": 8362,
+          "output_tokens": 512,
+          "retries_used": 0
+        }
+      ],
+      "stats": {
+        "ttft_ms": {
+          "median": 670.33,
+          "p95": 1616.52,
+          "p99": 1700.62,
+          "min": 634.53,
+          "max": 1721.65
+        },
+        "input_tps": {
+          "median": 25798.43,
+          "p95": 26171.22,
+          "p99": 26204.36,
+          "min": 6342.81,
+          "max": 26212.64
+        },
+        "output_tps": {
+          "median": 86.52,
+          "p95": 86.76,
+          "p99": 86.78,
+          "min": 86.4,
+          "max": 86.79
+        },
+        "total_latency_ms": {
+          "median": 6622.67,
+          "p95": 7462.02,
+          "p99": 7536.63,
+          "min": 6577.18,
+          "max": 7555.28
+        }
+      }
+    }
+  ]
+}

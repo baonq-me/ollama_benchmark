@@ -10,6 +10,7 @@ Usage:
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from rich.console import Console
@@ -57,8 +58,8 @@ Examples:
     )
     parser.add_argument(
         "--output",
-        default="frontend/public/results.json",
-        help="Output JSON file path (default: frontend/public/results.json)",
+        default=None,
+        help="Output JSON file path (default: frontend/public/results_{model}_{timestamp}.json)",
     )
     parser.add_argument(
         "--prompt-sizes",
@@ -106,22 +107,20 @@ def print_summary_table(data: dict) -> None:
         console.print("[yellow]No results to display.[/yellow]")
         return
 
-    table = Table(title="Ollama Benchmark Results — Median Metrics")
+    # Get model name from metadata if available
+    metadata = data.get("metadata", {})
+    model_name = metadata.get("model", "Unknown")
+    
+    table = Table(title=f"Ollama Benchmark Results — {model_name} — Median Metrics")
     table.add_column("Prompt Size", justify="right", style="cyan")
     table.add_column("TTFT (ms)", justify="right")
     table.add_column("Input t/s", justify="right")
     table.add_column("Output t/s", justify="right")
     table.add_column("Total Lat (ms)", justify="right")
-    table.add_column("KV Cache", justify="right")
 
     for entry in results:
         ps = entry["prompt_size"]
         s = entry["stats"]
-        kv = entry.get("kv_cache", {}).get("raw", {})
-        kv_str = ""
-        if kv:
-            kv_used = kv.get("kv_cache_used", kv.get("memory_used", "N/A"))
-            kv_str = str(kv_used)
 
         table.add_row(
             str(ps),
@@ -129,7 +128,6 @@ def print_summary_table(data: dict) -> None:
             f"{s['input_tps']['median']:.0f}",
             f"{s['output_tps']['median']:.1f}",
             f"{s['total_latency_ms']['median']:.0f}",
-            kv_str,
         )
 
     console.print(table)
@@ -165,7 +163,14 @@ def main() -> None:
         sys.exit(1)
 
     # Write JSON output
-    output_path = Path(args.output)
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        # Generate unique filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_model = args.model.replace(":", "_").replace("/", "_")
+        output_path = Path(f"frontend/public/results_{safe_model}_{timestamp}.json")
+    
     output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     console.print(f"\n[green]Results written to {output_path.resolve()}[/green]")
 
