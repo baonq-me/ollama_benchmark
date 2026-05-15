@@ -63,6 +63,10 @@ frontend/
 3. Update `README.md` documentation if needed
 4. Run `python -m ollama_benchmark.cli --help` to verify CLI
 5. Check `docs/NOTES.md` for known issues before committing
+6. **Always run all unit tests after any codebase changes**: `PYTHONPATH=. ./venv/bin/pytest tests/ -v`
+   - This ensures changes don't break existing functionality
+   - Run tests even for seemingly isolated changes
+   - All 25 tests must pass before considering changes complete
 
 ## Current Version
 
