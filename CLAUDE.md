@@ -7,7 +7,7 @@ A Python CLI tool + React dashboard for benchmarking Ollama LLM performance. Mea
 ## Quick Start
 
 ```bash
-# Activate virtual environment
+# Always activate virtual environment first
 source venv/bin/activate
 
 # Run a benchmark
@@ -16,6 +16,13 @@ python -m ollama_benchmark.cli --model llama3.2
 # View results in dashboard
 cd frontend && npm run dev
 ```
+
+## Virtual Environment
+
+**Always run the project using the venv environment:**
+- Activate venv before any Python commands: `source venv/bin/activate`
+- For tests: `PYTHONPATH=. ./venv/bin/pytest tests/ -v` (or ensure venv is activated first)
+- This ensures consistent dependency versions and isolated execution
 
 ## Architecture
 
