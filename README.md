@@ -9,6 +9,8 @@ A Python CLI tool + React dashboard for benchmarking Ollama LLM performance. Mea
 - **Retry Logic**: Exponential backoff retry for network failures (configurable)
 - **JSON Output**: Clean, structured JSON for easy integration with other tools
 - **React Dashboard**: Modern dark-themed dashboard with interactive Recharts charts
+- **Auto Model Pull**: Automatically downloads missing models from Ollama with real-time progress (speed + ETA)
+- **Individual Run Results**: Displays per-iteration results in a detailed table alongside median summary
 
 ## Quick Start
 
@@ -55,6 +57,21 @@ npm run dev
 
 Then open http://localhost:5173 and drag & drop your `results_{model}_{timestamp}.json` file. The output filename includes a timestamp (format: `YYYYMMDD_HHMMSS`) to ensure uniqueness across runs.
 
+### 4. (Optional) View Changelog
+```bash
+cat CHANGELOG.md
+```
+
+See the [CHANGELOG.md](CHANGELOG.md) file for a detailed list of changes and new features.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Then open http://localhost:5173 and drag & drop your `results_{model}_{timestamp}.json` file. The output filename includes a timestamp (format: `YYYYMMDD_HHMMSS`) to ensure uniqueness across runs.
+
 ## CLI Options
 
 | Flag | Default | Description |
@@ -68,6 +85,14 @@ Then open http://localhost:5173 and drag & drop your `results_{model}_{timestamp
 | `--concurrent` | `1` | Number of simultaneous requests for concurrent testing |
 | `--retries` | `3` | Max retry attempts on network failure |
 | `--retry-delay` | `2.0` | Base delay between retries in seconds (exponential backoff) |
+| `--pull-missing` | (enabled) | Automatically pull model if not found locally |
+| `--no-pull` | (disabled) | Skip automatic model pull, run benchmark anyway |
+| `--help` | - | Show help message with all available options |
+
+### Output
+- **JSON Results**: `frontend/public/results_{model}_{timestamp}.json`
+- **CLI Summary**: Individual run results table + median metrics summary table
+- **Model Pull**: Real-time progress with speed and ETA when downloading models
 
 ## Key Technical Details
 
@@ -79,11 +104,14 @@ Then open http://localhost:5173 and drag & drop your `results_{model}_{timestamp
 - **Default gen_tokens**: 512, **iterations**: 3, **concurrent**: 1, **retries**: 3, **retry_delay**: 2.0s
 - **Output**: `results_{model}_{timestamp}.json` (auto-generated with timestamp, or custom path via `--output`)
 - **Summary table**: Includes model name in title, displays median metrics per prompt size
+- **Individual run table**: Shows per-iteration results with all metrics for each run
 - **Error handling**: Handles errors gracefully (OOM, connection refused, model not found)
+- **Auto model pull**: Checks local models, pulls missing ones with progress indicator
 
 ### Benchmark Engine (`benchmark.py`)
 
 - **API**: `POST /api/chat` with `stream: true`, `options: {num_predict: gen_tokens}`
+- **Model Check**: `GET /api/tags` to check local models, `POST /api/pull` for downloads
 - **SSE Parsing**: Iterates `response.iter_lines()`, parses `data: {...}` chunks
 - **Timestamps**: `request_start`, `first_token_time`, `last_token_time` via `time.perf_counter()`
 - **Metrics computed**:
@@ -156,10 +184,11 @@ Then open http://localhost:5173 and drag & drop your `results_{model}_{timestamp
 
 ```
 ollama_benchmark/
+├── CHANGELOG.md               # Version history and new features
 ├── ollama_benchmark/          # Python package
 │   ├── __init__.py            # Package marker, version 0.1.0
-│   ├── cli.py                 # argparse CLI entry point
-│   ├── benchmark.py           # Core benchmark engine
+│   ├── cli.py                 # argparse CLI entry point + individual run display
+│   ├── benchmark.py           # Core benchmark engine + model pull logic
 │   └── requirements.txt       # requests, numpy, rich
 ├── frontend/                  # React + Vite dashboard
 │   ├── src/
@@ -182,6 +211,8 @@ ollama_benchmark/
 ## Known Issues / Gotchas
 
 - `retries_used` in run results is always 0 — the retry counter isn't propagated from `_retry_request()` to the result dict. The retry attempts are only visible in console logs.
+- **Model pull**: First run with a new model will download it automatically; subsequent runs use local cache
+- **Progress display**: Download progress shows in a single updating line with speed and ETA
 - Prompt token counts are approximate (word-count heuristic, ~1.3 tokens/word). Actual token counts depend on the model's tokenizer.
 - The `statistics` import in benchmark.py is unused (numpy is used instead).
 - No GPU monitoring — explicitly excluded per user request.

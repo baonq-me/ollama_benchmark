@@ -16,7 +16,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from ollama_benchmark.benchmark import run_benchmark_suite
+from ollama_benchmark.benchmark import run_benchmark_suite, check_and_pull_model
 
 console = Console()
 
@@ -97,7 +97,60 @@ Examples:
         default=2.0,
         help="Base delay between retries in seconds, uses exponential backoff (default: 2.0)",
     )
+    parser.add_argument(
+        "--pull-missing",
+        action="store_true",
+        default=True,
+        help="Automatically pull model if not found locally (default: True)",
+    )
+    parser.add_argument(
+        "--no-pull",
+        action="store_false",
+        dest="pull_missing",
+        help="Skip automatic model pull (run benchmark anyway)",
+    )
     return parser
+
+
+def print_individual_runs(data: dict) -> None:
+    """Print individual run results for each iteration."""
+    results = data.get("results", [])
+    if not results:
+        return
+
+    # Get model name from metadata if available
+    metadata = data.get("metadata", {})
+    model_name = metadata.get("model", "Unknown")
+
+    for entry in results:
+        ps = entry["prompt_size"]
+        runs = entry["runs"]
+
+        console.rule(f"[bold cyan]Prompt Size: {ps} tokens — Individual Run Results[/bold cyan]")
+
+        # Create table for individual runs
+        table = Table(title=f"Model: {model_name}")
+        table.add_column("Run", justify="center", style="cyan")
+        table.add_column("TTFT (ms)", justify="right")
+        table.add_column("Input t/s", justify="right")
+        table.add_column("Output t/s", justify="right")
+        table.add_column("Total Lat (ms)", justify="right")
+        table.add_column("Prompt Tokens", justify="right")
+        table.add_column("Output Tokens", justify="right")
+
+        for i, run in enumerate(runs, 1):
+            table.add_row(
+                str(i),
+                f"{run['ttft_ms']:.1f}",
+                f"{run['input_tps']:.0f}",
+                f"{run['output_tps']:.1f}",
+                f"{run['total_latency_ms']:.0f}",
+                str(run['prompt_tokens']),
+                str(run['output_tokens']),
+            )
+
+        console.print(table)
+        console.print()
 
 
 def print_summary_table(data: dict) -> None:
@@ -157,6 +210,7 @@ def main() -> None:
             concurrent=args.concurrent,
             retries=args.retries,
             retry_delay=args.retry_delay,
+            pull_if_missing=args.pull_missing,
         )
     except Exception as exc:
         console.print(f"[red]Fatal error: {exc}[/red]")
@@ -174,7 +228,11 @@ def main() -> None:
     output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     console.print(f"\n[green]Results written to {output_path.resolve()}[/green]")
 
-    # Print summary table
+    # Print individual run results first
+    console.print()
+    print_individual_runs(data)
+
+    # Print summary table with median metrics
     console.print()
     print_summary_table(data)
 

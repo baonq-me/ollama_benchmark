@@ -1,6 +1,7 @@
 """Benchmark engine for Ollama model throughput and latency measurement."""
 
 import json
+import sys
 import time
 import statistics
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -261,6 +262,165 @@ def _compute_stats(values: list[float]) -> dict[str, float]:
 
 # ── Benchmark suite ─────────────────────────────────────────────────────────
 
+def check_and_pull_model(
+    endpoint: str,
+    model: str,
+    retries: int = 3,
+    retry_delay: float = 2.0,
+) -> bool:
+    """Check if model exists locally, pull if needed.
+
+    Returns True if model is available (either already exists or was pulled successfully).
+    Returns False if pull failed or model is still not available.
+    """
+    url_tags = f"{endpoint.rstrip('/')}/api/tags"
+    url_pull = f"{endpoint.rstrip('/')}/api/pull"
+
+    # Step 1: Check if model exists in local models list
+    try:
+        response = _retry_request(
+            "GET",
+            url_tags,
+            retries=retries,
+            retry_delay=retry_delay,
+            timeout=30,
+        )
+        data = response.json()
+        local_models = data.get("models", [])
+        model_names = [m.get("name", "") for m in local_models]
+
+        # Check if exact match or base name match exists
+        model_base = model.split(":")[0]  # e.g., "llama3.2" from "llama3.2:7b"
+        if model in model_names or model_base in model_names:
+            console.log(f"[green]✓ Model '{model}' already available locally[/green]")
+            return True
+    except Exception as exc:
+        console.log(f"[yellow]Warning: Could not list local models: {exc}[/yellow]")
+
+    # Step 2: Model not found, pull it
+    console.log(f"[cyan]Model '{model}' not found. Pulling from Ollama...[/cyan]")
+
+    try:
+        pull_response = _retry_request(
+            "POST",
+            url_pull,
+            retries=retries,
+            retry_delay=retry_delay,
+            json={"model": model, "stream": True},
+            stream=True,
+            timeout=600,  # 10 minute timeout for large model pulls
+        )
+
+        # Parse SSE stream to show download progress (single line with speed + ETA)
+        last_status = ""
+        total_bytes = 0
+        completed_bytes = 0
+        download_start = time.perf_counter()
+        last_progress_time = download_start
+        last_completed_bytes = 0
+
+        for line in pull_response.iter_lines(decode_unicode=True):
+            if not line:
+                continue
+            if isinstance(line, bytes):
+                line = line.decode("utf-8")
+
+            data_str = line
+            if line.startswith("data: "):
+                data_str = line[6:]
+
+            try:
+                chunk = json.loads(data_str)
+            except json.JSONDecodeError:
+                continue
+
+            status = chunk.get("status", "")
+            last_status = status
+
+            if status == "success":
+                console.log(f"[green]✓ Successfully pulled model '{model}'[/green]")
+                return True
+
+            if "total" in chunk:
+                total_bytes = chunk["total"]
+
+            if "completed" in chunk:
+                completed_bytes = chunk["completed"]
+                now = time.perf_counter()
+
+                # Update progress at most ~4 times per second
+                if total_bytes > 0 and (now - last_progress_time >= 0.25 or completed_bytes >= total_bytes):
+                    elapsed = now - download_start
+                    progress_elapsed = now - last_progress_time
+                    bytes_delta = completed_bytes - last_completed_bytes
+
+                    # Calculate speed (MB/s) over the recent interval
+                    if progress_elapsed > 0:
+                        speed_mbs = (bytes_delta / (1024 * 1024)) / progress_elapsed
+                    else:
+                        speed_mbs = 0
+
+                    # Calculate overall average speed (MB/s) for ETA
+                    if elapsed > 0:
+                        avg_speed_mbs = (completed_bytes / (1024 * 1024)) / elapsed
+                    else:
+                        avg_speed_mbs = 0
+
+                    # Calculate ETA
+                    remaining_bytes = total_bytes - completed_bytes
+                    if avg_speed_mbs > 0:
+                        eta_seconds = remaining_bytes / (avg_speed_mbs * 1024 * 1024)
+                        if eta_seconds < 60:
+                            eta_str = f"{eta_seconds:.0f}s"
+                        else:
+                            eta_min = int(eta_seconds // 60)
+                            eta_sec = int(eta_seconds % 60)
+                            eta_str = f"{eta_min}m{eta_sec:02d}s"
+                    else:
+                        eta_str = "---"
+
+                    percent = (completed_bytes / total_bytes) * 100
+                    mb_completed = completed_bytes / (1024 * 1024)
+                    mb_total = total_bytes / (1024 * 1024)
+
+                    # Single-line progress (Rich console with \r to overwrite same line)
+                    progress_line = (
+                        f"Downloading: {mb_completed:.1f}/{mb_total:.1f} MB "
+                        f"({percent:.1f}%)  {speed_mbs:.1f} MB/s  ETA: {eta_str}"
+                    )
+                    console.print(f"[cyan]{progress_line}[/cyan]", end="\r")
+
+                    last_progress_time = now
+                    last_completed_bytes = completed_bytes
+
+        # Clear the progress line and move to next line on completion
+        console.print()
+
+        # If we exit the loop without "success", check if model is now available
+        if last_status != "success":
+            console.log(f"[yellow]Pull may have completed with status: {last_status}[/yellow]")
+            # Try again to verify
+            verify_response = _retry_request(
+                "GET",
+                url_tags,
+                retries=1,
+                retry_delay=0,
+                timeout=30,
+            )
+            data = verify_response.json()
+            local_models = data.get("models", [])
+            model_names = [m.get("name", "") for m in local_models]
+            model_base = model.split(":")[0]
+            if model in model_names or model_base in model_names:
+                console.log(f"[green]✓ Model '{model}' is now available[/green]")
+                return True
+
+    except Exception as exc:
+        console.log(f"[red]✗ Failed to pull model '{model}': {exc}[/red]")
+
+    return False
+
+
 def run_benchmark_suite(
     endpoint: str,
     model: str,
@@ -270,12 +430,36 @@ def run_benchmark_suite(
     concurrent: int = 1,
     retries: int = 3,
     retry_delay: float = 2.0,
+    pull_if_missing: bool = True,
 ) -> dict[str, Any]:
     """Run the full benchmark suite across all prompt sizes.
 
-    Returns a dict matching the JSON output schema.
+    Args:
+        endpoint: Ollama server URL
+        model: Model name to benchmark
+        prompt_sizes: List of prompt token counts to test
+        gen_tokens: Target number of output tokens
+        iterations: Number of benchmark runs per prompt size
+        concurrent: Number of simultaneous requests
+        retries: Max retry attempts on network failure
+        retry_delay: Base delay between retries
+        pull_if_missing: If True, automatically pull model if not found locally
+
+    Returns:
+        A dict matching the JSON output schema
     """
     results: list[dict[str, Any]] = []
+
+    # Check and pull model if needed
+    if pull_if_missing:
+        model_available = check_and_pull_model(
+            endpoint, model, retries, retry_delay
+        )
+        if not model_available:
+            console.log(
+                f"[yellow]Warning: Model '{model}' may not be fully available. "
+                f"Proceeding with benchmark anyway...[/yellow]"
+            )
 
     for prompt_size in prompt_sizes:
         console.rule(f"[bold cyan]Prompt size: {prompt_size} tokens[/bold cyan]")
