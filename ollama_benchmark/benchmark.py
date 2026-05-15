@@ -427,7 +427,6 @@ def run_benchmark_suite(
     concurrent: int = 1,
     retries: int = 3,
     retry_delay: float = 2.0,
-    pull_if_missing: bool = True,
 ) -> dict[str, Any]:
     """Run the full benchmark suite across all prompt sizes.
 
@@ -440,23 +439,21 @@ def run_benchmark_suite(
         concurrent: Number of simultaneous requests
         retries: Max retry attempts on network failure
         retry_delay: Base delay between retries
-        pull_if_missing: If True, automatically pull model if not found locally
 
     Returns:
         A dict matching the JSON output schema
     """
     results: list[dict[str, Any]] = []
 
-    # Check and pull model if needed
-    if pull_if_missing:
-        model_available = check_and_pull_model(
-            endpoint, model, retries, retry_delay
+    # Always check and pull model if missing
+    model_available = check_and_pull_model(
+        endpoint, model, retries, retry_delay
+    )
+    if not model_available:
+        console.log(
+            f"[yellow]Warning: Model '{model}' may not be fully available. "
+            f"Proceeding with benchmark anyway...[/yellow]"
         )
-        if not model_available:
-            console.log(
-                f"[yellow]Warning: Model '{model}' may not be fully available. "
-                f"Proceeding with benchmark anyway...[/yellow]"
-            )
 
     for prompt_size in prompt_sizes:
         console.rule(f"[bold cyan]Prompt size: {prompt_size} tokens[/bold cyan]")

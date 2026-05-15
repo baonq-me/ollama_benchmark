@@ -16,7 +16,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from ollama_benchmark.benchmark import run_benchmark_suite, check_and_pull_model
+from ollama_benchmark.benchmark import run_benchmark_suite
 
 console = Console()
 
@@ -96,18 +96,6 @@ Examples:
         type=float,
         default=2.0,
         help="Base delay between retries in seconds, uses exponential backoff (default: 2.0)",
-    )
-    parser.add_argument(
-        "--pull-missing",
-        action="store_true",
-        default=True,
-        help="Automatically pull model if not found locally (default: True)",
-    )
-    parser.add_argument(
-        "--no-pull",
-        action="store_false",
-        dest="pull_missing",
-        help="Skip automatic model pull (run benchmark anyway)",
     )
     return parser
 
@@ -210,7 +198,6 @@ def main() -> None:
             concurrent=args.concurrent,
             retries=args.retries,
             retry_delay=args.retry_delay,
-            pull_if_missing=args.pull_missing,
         )
     except Exception as exc:
         console.print(f"[red]Fatal error: {exc}[/red]")
