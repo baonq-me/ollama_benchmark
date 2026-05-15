@@ -210,14 +210,16 @@ ollama_benchmark/
 
 ## Known Issues / Gotchas
 
-- `retries_used` in run results is always 0 — the retry counter isn't propagated from `_retry_request()` to the result dict. The retry attempts are only visible in console logs.
 - **Model pull**: First run with a new model will download it automatically; subsequent runs use local cache
 - **Progress display**: Download progress shows in a single updating line with speed and ETA
 - Prompt token counts are approximate (word-count heuristic, ~1.3 tokens/word). Actual token counts depend on the model's tokenizer.
-- The `statistics` import in benchmark.py is unused (numpy is used instead).
 - No GPU monitoring — explicitly excluded per user request.
 - Frontend has a chunk size warning on build (Recharts is ~570KB). Could be code-split later.
 - **venv required**: Python commands must be run inside the virtual environment. Check that `(venv)` appears in your terminal prompt before running benchmarks.
+
+### Fixed Issues
+- `retries_used` in run results now properly reflects retry attempts — fixed in v0.1.1
+- Unused `statistics` import removed from benchmark.py
 
 ## License
 

@@ -1,3 +1,5 @@
 venv/*
+__pycache__/
 ollama_benchmark/__pycache__/
 frontend/public/results*
+tests/__pycache__/
